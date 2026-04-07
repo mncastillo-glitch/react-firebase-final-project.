@@ -1,68 +1,48 @@
 import { useState } from "react";
 import { db } from "./firebase"; 
 import { collection, addDoc } from "firebase/firestore";
-import "./App.css"; // We'll move styles here for a cleaner look
+import "./App.css"; 
 
 function App() {
-  // 1. Unified state for the activity fields
-  const [student, setStudent] = useState({
-    name: "",
-    course: "",
-    year: ""
-  });
+  const [note, setNote] = useState("");
 
-  const saveToFirebase = async () => {
-    // Validation: Ensure all fields are filled
-    if (!student.name || !student.course || !student.year) {
-      return alert("Please fill in all fields!");
+  const saveNote = async () => {
+    if (!note.trim()) {
+      return alert("Please write something first!");
     }
 
     try {
-      // 2. Saving to a "students" collection instead of "notes"
-      await addDoc(collection(db, "students"), {
-        ...student,
+      // Saving to the 'notes' collection
+      await addDoc(collection(db, "notes"), {
+        content: note,
         timestamp: new Date()
       });
 
-      alert("Student Record Saved! 🎓");
-      
-      // 3. Reset form
-      setStudent({ name: "", course: "", year: "" });
+      alert("Note saved successfully! 📝");
+      setNote(""); // Clear the input
     } catch (e) {
       console.error("Error: ", e);
-      alert("Error saving. Make sure Firestore rules are set to Test Mode.");
+      alert("Error saving note. Check Firebase rules!");
     }
   };
 
   return (
     <div className="App">
       <div className="card">
-        <h1>Student Registry</h1>
-        <p>Enter details for the Firebase activity</p>
+        <h1>Cloud Notes</h1>
+        <p>Your thoughts, synced to the backend</p>
 
         <div className="input-group">
           <input
             type="text"
-            placeholder="Full Name"
-            value={student.name}
-            onChange={(e) => setStudent({...student, name: e.target.value})}
-          />
-          <input
-            type="text"
-            placeholder="Course (e.g. BSIT)"
-            value={student.course}
-            onChange={(e) => setStudent({...student, course: e.target.value})}
-          />
-          <input
-            type="text"
-            placeholder="Year Level"
-            value={student.year}
-            onChange={(e) => setStudent({...student, year: e.target.value})}
+            placeholder="Write a note..."
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
           />
         </div>
 
-        <button onClick={saveToFirebase}>
-          Save to Backend
+        <button onClick={saveNote}>
+          Save Note
         </button>
       </div>
     </div>
