@@ -103,3 +103,27 @@ button:active {
   font-weight: bold;
   margin-top: 1rem;
 }
+.notes-list {
+  margin-top: 2rem;
+  text-align: left;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.notes-list h3 {
+  font-size: 1rem;
+  color: #1a2a6c;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+.note-item {
+  background: #f0f4f8;
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #333;
+  border-left: 4px solid #b21f1f;
+}

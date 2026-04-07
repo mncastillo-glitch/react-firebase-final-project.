@@ -1,28 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "./firebase"; 
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, orderBy, onSnapshot } from "firebase/firestore";
 import "./App.css"; 
 
 function App() {
   const [note, setNote] = useState("");
+  const [notes, setNotes] = useState([]); // State to hold the list of notes
+
+  // --- LIVE LISTENER ---
+  useEffect(() => {
+    // This looks at the 'notes' collection, sorted by time
+    const q = query(collection(db, "notes"), orderBy("createdAt", "desc"));
+    
+    // This updates the 'notes' state automatically whenever the DB changes
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setNotes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, []);
 
   const saveNote = async () => {
-    if (!note.trim()) {
-      return alert("Please write something first!");
-    }
+    if (!note.trim()) return alert("Write something! ✍️");
 
     try {
-      // Saving to the 'notes' collection
       await addDoc(collection(db, "notes"), {
         content: note,
-        timestamp: new Date()
+        createdAt: new Date()
       });
-
-      alert("Note saved successfully! 📝");
-      setNote(""); // Clear the input
+      setNote(""); 
     } catch (e) {
-      console.error("Error: ", e);
-      alert("Error saving note. Check Firebase rules!");
+      alert("Error saving. Check Firebase Rules!");
     }
   };
 
@@ -30,20 +38,25 @@ function App() {
     <div className="App">
       <div className="card">
         <h1>Cloud Notes</h1>
-        <p>Your thoughts, synced to the backend</p>
-
+        
         <div className="input-group">
           <input
             type="text"
-            placeholder="Write a note..."
+            placeholder="What's on your mind?..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
+          <button onClick={saveNote}>Save Note</button>
         </div>
 
-        <button onClick={saveNote}>
-          Save Note
-        </button>
+        <div className="notes-list">
+          <h3>Recent Notes</h3>
+          {notes.map((n) => (
+            <div key={n.id} className="note-item">
+              {n.content}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
